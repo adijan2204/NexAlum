@@ -50,11 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`Welcome back, ${name}!`, 'success');
             setTimeout(() => {
                 if (role === 'admin') {
-                    window.location.href = 'dashboards/admin.html';
+                    window.location.href = 'public/dashboards/admin.html';
                 } else if (role === 'alumni') {
-                    window.location.href = 'dashboards/alumni.html';
+                    window.location.href = 'public/dashboards/alumni.html';
                 } else {
-                    window.location.href = 'dashboards/student.html';
+                    window.location.href = 'public/dashboards/student.html';
                 }
             }, 800);
         });

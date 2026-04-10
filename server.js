@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Database Connection
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/alumni_db';
@@ -27,7 +27,7 @@ app.use('/api/users', require('./routes/users'));
 
 // Fallback for HTML pages
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
