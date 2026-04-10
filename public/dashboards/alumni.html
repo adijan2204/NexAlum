@@ -26,8 +26,16 @@
         }
 
         .contact-list {
-            width: 300px;
-            border-right: 1px solid rgba(109, 40, 217, 0.1);
+            width: 100%;
+            border-bottom: 1px solid rgba(109, 40, 217, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .contact-list {
+                width: 300px;
+                border-bottom: none;
+                border-right: 1px solid rgba(109, 40, 217, 0.1);
+            }
         }
 
         .msg-alumni {
@@ -94,7 +102,7 @@
 
             <!-- Chat Section -->
             <section id="alumni-chats" class="section-content hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-purple-50 flex chat-container overflow-hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-purple-50 flex flex-col md:flex-row chat-container overflow-hidden">
                     <!-- Contacts Sidebar -->
                     <div class="contact-list flex flex-col bg-gray-50/30">
                         <div class="p-6 border-b border-purple-50 bg-white">

@@ -23,9 +23,9 @@
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-purple-900">NexAlum <span class="text-sm font-normal text-purple-400">|
                     Admin</span></h1>
-            <div class="flex items-center space-x-6">
-                <span class="font-semibold text-gray-700">Administrator</span>
-                <button onclick="logout()" class="text-red-500 font-medium hover:underline">Logout</button>
+            <div class="flex items-center space-x-3 md:space-x-6">
+                <span class="font-semibold text-gray-700 hidden md:inline">Administrator</span>
+                <button onclick="logout()" class="text-red-500 font-medium hover:underline text-sm md:text-base">Logout</button>
             </div>
         </div>
     </nav>
@@ -47,10 +47,11 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-purple-50 overflow-hidden">
-            <div class="p-8 border-b border-gray-50">
-                <h2 class="text-2xl font-bold text-gray-900">Pending Alumni Registration</h2>
+            <div class="p-6 md:p-8 border-b border-gray-50">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900">Pending Alumni Registration</h2>
             </div>
-            <table class="w-full text-left">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left min-w-[600px] md:min-w-full">
                 <thead class="bg-gray-50 text-gray-500 text-sm uppercase">
                     <tr>
                         <th class="px-8 py-4 px-8">Full Name</th>
@@ -76,7 +77,8 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
 

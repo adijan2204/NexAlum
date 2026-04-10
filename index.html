@@ -44,16 +44,16 @@
                 <a href="#" class="text-purple-600">Home</a>
                 <a href="#about" class="hover:text-purple-600 transition">About</a>
             </div>
-            <div class="flex space-x-4">
-                <a href="#login-section" class="px-6 py-2 rounded-full border border-purple-600 text-purple-600 font-semibold hover:bg-purple-50 transition">Login</a>
-                <button onclick="toggleModal('registerModal')" class="px-6 py-2 rounded-full purple-gradient text-white font-semibold hover:shadow-lg transition">Join Now</button>
+            <div class="flex space-x-2 md:space-x-4">
+                <a href="#login-section" class="px-3 md:px-6 py-2 rounded-full border border-purple-600 text-purple-600 font-semibold hover:bg-purple-50 transition text-sm md:text-base">Login</a>
+                <button onclick="toggleModal('registerModal')" class="px-3 md:px-6 py-2 rounded-full purple-gradient text-white font-semibold hover:shadow-lg transition text-sm md:text-base whitespace-nowrap">Join Now</button>
             </div>
         </div>
     </nav>
 
     <!-- Registration Modal -->
-    <div id="registerModal" class="fixed inset-0 z-[100] hidden bg-[#0F0720]/80 backdrop-blur-md flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden relative animate-fade-in">
+    <div id="registerModal" class="fixed inset-0 z-[100] hidden bg-[#0F0720]/80 backdrop-blur-md flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl rounded-3xl md:rounded-[3rem] shadow-2xl overflow-hidden relative animate-fade-in my-auto">
             <button onclick="toggleModal('registerModal')" class="absolute top-8 right-8 text-gray-400 hover:text-purple-600 transition z-10">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
@@ -69,10 +69,10 @@
                 </div>
 
                 <!-- Form Area -->
-                <div class="flex-1 p-8 md:p-12">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-bold text-purple-900">Create Account</h2>
-                        <p class="text-gray-500 text-sm mt-1">Fill in the details to get started</p>
+                <div class="flex-1 p-6 md:p-12">
+                    <div class="mb-6 md:mb-8">
+                        <h2 class="text-2xl md:text-3xl font-bold text-purple-900">Create Account</h2>
+                        <p class="text-gray-500 text-xs md:text-sm mt-1">Fill in the details to get started</p>
                     </div>
 
                     <form id="modalRegisterForm" class="space-y-4">
@@ -136,16 +136,16 @@
     <section id="login-section" class="py-20 bg-white">
         <div class="container mx-auto px-6">
             <div class="max-w-4xl mx-auto flex flex-col md:flex-row bg-gray-50 rounded-3xl overflow-hidden shadow-2xl border border-purple-50">
-                <div class="md:w-1/2 purple-gradient p-12 text-white flex flex-col justify-center">
-                    <h2 class="text-4xl font-bold mb-4">Welcome Back!</h2>
-                    <p class="opacity-80 mb-8">Reconnect with your batchmates, find career opportunities, and stay updated with your college.</p>
+                <div class="md:w-1/2 purple-gradient p-8 md:p-12 text-white flex flex-col justify-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">Welcome Back!</h2>
+                    <p class="opacity-80 mb-6 md:mb-8">Reconnect with your batchmates, find career opportunities, and stay updated with your college.</p>
                     <div class="space-y-4">
                         <div class="flex items-center space-x-4"><span>✓ Alumni Directory</span></div>
                         <div class="flex items-center space-x-4"><span>✓ Job Portal</span></div>
                         <div class="flex items-center space-x-4"><span>✓ Mentorship</span></div>
                     </div>
                 </div>
-                <div class="md:w-1/2 p-12 bg-white">
+                <div class="md:w-1/2 p-6 md:p-12 bg-white">
                     <h3 class="text-2xl font-bold text-gray-800 mb-6">Login to Dashboard</h3>
                     <form id="loginForm" class="space-y-6">
                         <div>
