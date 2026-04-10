@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - NexAlum</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .purple-gradient {
+            background: linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(109, 40, 217, 0.1);
+        }
+
+        .chat-container {
+            height: 600px;
+        }
+
+        .contact-list {
+            width: 300px;
+            border-right: 1px solid rgba(109, 40, 217, 0.1);
+        }
+
+        /* Message Bubbles */
+        .msg-student {
+            background: #6D28D9;
+            color: white;
+            border-radius: 1.5rem 1.5rem 0 1.5rem;
+            align-self: flex-end;
+            box-shadow: 0 4px 15px rgba(109, 40, 217, 0.2);
+        }
+
+        .msg-alumni {
+            background: white;
+            color: #1F2937;
+            border-radius: 1.5rem 1.5rem 1.5rem 0;
+            align-self: flex-start;
+            border: 1px solid #F3F4F6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-[#F8F7FF] min-h-screen">
+    <nav class="bg-white border-b border-purple-50 py-4 px-6 fixed w-full top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-purple-900">NexAlum <span class="text-sm font-normal text-purple-400">|
+                    Student</span></h1>
+            <div class="flex items-center space-x-6">
+                <span id="userName" class="font-semibold text-gray-700">Student Name</span>
+                <button onclick="logout()" class="text-red-500 font-medium hover:underline">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast System -->
+    <div id="toastContainer" class="fixed bottom-8 right-8 z-[200] flex flex-col space-y-4"></div>
+
+    <div class="container mx-auto pt-24 px-6 flex flex-col md:flex-row gap-8 pb-12">
+        <!-- Sidebar -->
+        <aside class="md:w-64 space-y-4">
+            <button onclick="showSection('alumni-search')"
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                <span class="font-bold">Search Alumni</span>
+            </button>
+            <button onclick="showSection('job-portal')"
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                <span class="font-bold">Job Portal</span>
+            </button>
+            <button onclick="showSection('chat-section')"
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                <span class="font-bold">My Chats</span>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1">
+            <!-- Alumni Search Section -->
+            <section id="alumni-search" class="section-content">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50">
+                    <h2 class="text-3xl font-bold text-purple-900 mb-6">Find Your Mentors</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="alumniList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Job Portal Section -->
+            <section id="job-portal" class="section-content hidden">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50">
+                    <h2 class="text-3xl font-bold text-purple-900 mb-6">Latest Career Opportunities</h2>
+                    <div class="space-y-6" id="jobList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chat Section -->
+            <section id="chat-section" class="section-content hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-purple-50 flex chat-container overflow-hidden">
+                    <!-- Contacts Sidebar -->
+                    <div class="contact-list flex flex-col bg-gray-50/30">
+                        <div class="p-6 border-b border-purple-50 bg-white">
+                            <h3 class="font-bold text-purple-900">Recent Chats</h3>
+                        </div>
+                        <div id="contactsSidebar" class="flex-1 overflow-y-auto">
+                            <!-- Chats populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <div class="flex-1 flex flex-col bg-white">
+                        <div class="p-6 border-b border-purple-50 flex justify-between items-center bg-white/50 backdrop-blur-md">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 purple-gradient rounded-xl flex items-center justify-center text-white font-bold" id="activeAlumnusInitials">?</div>
+                                <div>
+                                    <h2 id="chatWith" class="text-xl font-bold text-purple-900">Select an Alumnus</h2>
+                                    <div id="connectionBadge" class="hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="chatMessages" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4 bg-[#F8F7FF]/50">
+                            <!-- Messages populated by JS -->
+                             <div class="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                </div>
+                                <p class="font-bold">Select a contact to start messaging</p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 border-t border-purple-50">
+                            <div class="flex gap-4">
+                                <input type="text" id="messageInput" placeholder="Select alumnus first..." disabled
+                                    class="flex-1 px-6 py-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-purple-400 outline-none transition duration-300">
+                                <button onclick="sendMessage()" id="sendBtn" disabled class="px-8 py-3 bg-gray-300 text-white rounded-2xl font-bold transition-all transform active:scale-95 shadow-lg">Send</button>
+                            </div>
+                            <div id="connectionRequestArea" class="mt-4 hidden p-6 bg-purple-50 rounded-[2rem] border border-purple-200 text-center animate-bounce-subtle">
+                                <p class="text-purple-900 font-bold mb-4">WANT TO CONNECT?</p>
+                                <button onclick="sendConnectRequest()" class="px-10 py-4 purple-gradient text-white rounded-2xl font-bold shadow-xl shadow-purple-200 hover:-translate-y-1 transition duration-300">
+                                    Send Connection Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const staticAlumni = [
+            { id: 1, fullName: "Shruti Ingole", jobTitle: "Lead Developer", currentCompany: "NexAlum", graduationYear: 2026, bio: "Building the future of alumni networking.", skills: ["React", "Node.js"] },
+            { id: 2, fullName: "Vaishnavi Marsakhole", jobTitle: "UI/UX Designer", currentCompany: "Meta", graduationYear: 2026, bio: "Designing premium experiences.", skills: ["Figma", "UI Design"] },
+            { id: 3, fullName: "Mansi Mate", jobTitle: "Backend Expert", currentCompany: "Google", graduationYear: 2025, bio: "Scalability is my middle name.", skills: ["Go", "Kubernetes"] }
+        ];
+
+        const chatHistories = {
+            "Shruti Ingole": [
+                { sender: "alumni", text: "Hello! Thanks for connecting." },
+                { sender: "student", text: "Hi Shruti! I'm really impressed by your NexAlum project." },
+                { sender: "alumni", text: "Thank you! I'd be happy to guide you on React and development best practices." },
+                { sender: "student", text: "That would be awesome! When are you free for a quick call?" }
+            ],
+            "Vaishnavi Marsakhole": [
+                { sender: "student", text: "Hello, I want to connect with you" }
+            ]
+        };
+
+        const staticJobs = [
+            { title: "Junior Web Developer", company: "NexAlum Tech", location: "Remote", salary: "60k - 80k" },
+            { title: "Product Designer", company: "Design Pro", location: "Bangalore", salary: "100k - 120k" },
+            { title: "Software Engineer", company: "Meta", location: "Hyderabad", salary: "150k - 180k" }
+        ];
+
+        let activeAlumnus = null;
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `px-6 py-4 rounded-2xl text-white font-bold shadow-2xl transition duration-500 transform translate-y-10 animate-in fade-in fill-mode-forwards ${
+                type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-purple-600'
+            }`;
+            toast.innerText = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'chat-section') loadChatContacts();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '../index.html';
+        }
+
+        function loadData() {
+            document.getElementById('userName').innerText = localStorage.getItem('fullName') || 'Student';
+            
+            // INITIALIZE DEMO DATA
+            if(!localStorage.getItem('acceptedRequests')) {
+                localStorage.setItem('acceptedRequests', JSON.stringify(["Shruti Ingole"]));
+            }
+            if(!localStorage.getItem('pendingRequests')) {
+                localStorage.setItem('pendingRequests', JSON.stringify(["Vaishnavi Marsakhole"]));
+            }
+
+            const alumniList = document.getElementById('alumniList');
+            alumniList.innerHTML = '';
+            staticAlumni.forEach(a => {
+                const initials = a.fullName.split(' ').map(n => n[0]).join('');
+                alumniList.innerHTML += `
+                    <div class="glass-card p-8 rounded-[2.5rem] flex flex-col space-y-4 border border-purple-50 hover:shadow-xl transition duration-500">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-2xl purple-gradient flex items-center justify-center text-white text-xl font-bold shadow-lg">${initials}</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-900 text-lg">${a.fullName}</h3>
+                                <p class="text-xs text-purple-600 font-bold uppercase tracking-wider">${a.jobTitle} @ ${a.currentCompany}</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 italic line-clamp-2">${a.bio}</p>
+                        <div class="pt-4 flex justify-between items-center border-t border-purple-50">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Class of ${a.graduationYear}</span>
+                            <button onclick="openChat('${a.fullName}')" class="px-4 py-2 bg-purple-50 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-600 hover:text-white transition">Message</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const jobList = document.getElementById('jobList');
+            jobList.innerHTML = '';
+            staticJobs.forEach(j => {
+                jobList.innerHTML += `
+                    <div class="p-6 border border-gray-100 rounded-2xl hover:border-purple-200 transition">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">${j.title}</h3>
+                                <p class="text-purple-600 font-medium">${j.company}</p>
+                                <p class="text-sm text-gray-500 mt-2">${j.location} • ${j.salary}</p>
+                            </div>
+                            <button onclick="showToast('Applied Successfully!', 'success')" class="px-6 py-2 rounded-lg bg-purple-50 text-purple-600 font-bold hover:bg-purple-600 hover:text-white transition">Apply Now</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function loadChatContacts() {
+            const sidebar = document.getElementById('contactsSidebar');
+            const accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
+            const pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+            
+            sidebar.innerHTML = '';
+            const allAlumni = [...new Set([...accepted, ...pending])];
+
+            if(allAlumni.length === 0) {
+                sidebar.innerHTML = '<div class="p-6 text-center text-gray-400">No chats yet</div>';
+                return;
+            }
+
+            allAlumni.forEach(name => {
+                const isApproved = accepted.includes(name);
+                sidebar.innerHTML += `
+                    <button onclick="openChat('${name}')" class="w-full p-6 text-left hover:bg-white transition border-b border-purple-50 ${activeAlumnus === name ? 'bg-white border-l-4 border-l-purple-600' : ''}">
+                         <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg purple-gradient flex items-center justify-center text-white text-xs font-bold">${name[0]}</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">${name}</h4>
+                                <p class="text-[9px] font-bold uppercase tracking-widest ${isApproved ? 'text-green-500' : 'text-purple-400'}">
+                                    ${isApproved ? 'Connected' : 'Waiting'}
+                                </p>
+                            </div>
+                         </div>
+                    </button>
+                `;
+            });
+        }
+
+        function openChat(name) {
+            activeAlumnus = name;
+            showSection('chat-section');
+            document.getElementById('chatWith').innerText = name;
+            document.getElementById('activeAlumnusInitials').innerText = name[0];
+            
+            const accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
+            const pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+            
+            const isAccepted = accepted.includes(name);
+            const isPending = pending.includes(name);
+            
+            const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendBtn');
+            const requestArea = document.getElementById('connectionRequestArea');
+            const chatBox = document.getElementById('chatMessages');
+            const badge = document.getElementById('connectionBadge');
+
+            chatBox.innerHTML = '';
+            badge.classList.remove('hidden');
+
+            if (isAccepted) {
+                badge.className = "px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-bold uppercase";
+                badge.innerText = "Connected";
+                input.disabled = false;
+                input.placeholder = "Write a message...";
+                btn.disabled = false;
+                btn.classList.add('purple-gradient');
+                btn.classList.remove('bg-gray-300');
+                requestArea.classList.add('hidden');
+                
+                // LOAD SAMPLE CHATS
+                const history = chatHistories[name] || [{ sender: "alumni", text: "You are now connected! Feel free to ask anything." }];
+                history.forEach(m => {
+                    chatBox.innerHTML += `
+                        <div class="px-5 py-3 max-w-[80%] shadow-sm ${m.sender === 'student' ? 'msg-student' : 'msg-alumni'}">
+                            ${m.text}
+                        </div>
+                    `;
+                });
+            } else if (isPending) {
+                badge.className = "px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-[10px] font-bold uppercase";
+                badge.innerText = "Check Approval Status";
+                input.disabled = true;
+                input.placeholder = "Waiting for approval...";
+                btn.disabled = true;
+                btn.classList.remove('purple-gradient');
+                btn.classList.add('bg-gray-300');
+                requestArea.classList.add('hidden');
+                chatBox.innerHTML = `
+                    <div class="px-5 py-3 max-w-[80%] msg-student">Hello, I want to connect with you</div>
+                    <div class="flex flex-col items-center justify-center p-12 opacity-40">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-4 animate-pulse">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <p class="font-bold text-sm tracking-widest uppercase">APPROVAL PENDING</p>
+                        <p class="text-xs mt-2">The alumnus is reviewing your request</p>
+                    </div>
+                `;
+            } else {
+                badge.classList.add('hidden');
+                input.disabled = true;
+                input.placeholder = "Connection required";
+                btn.disabled = true;
+                btn.classList.remove('purple-gradient');
+                btn.classList.add('bg-gray-300');
+                requestArea.classList.remove('hidden');
+            }
+            loadChatContacts();
+        }
+
+        function sendConnectRequest() {
+            let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+            if (!pending.includes(activeAlumnus)) {
+                pending.push(activeAlumnus);
+                localStorage.setItem('pendingRequests', JSON.stringify(pending));
+            }
+            showToast('Request Sent Successfully!', 'success');
+            openChat(activeAlumnus);
+        }
+
+        function sendMessage() {
+            const msg = document.getElementById('messageInput').value;
+            if (msg) {
+                const chatBox = document.getElementById('chatMessages');
+                chatBox.innerHTML += `<div class="px-5 py-3 max-w-[80%] msg-student">${msg}</div>`;
+                document.getElementById('messageInput').value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
