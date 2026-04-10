@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Online Alumni Management System (NexAlum)
 
 NexAlum is a premium, web-based platform designed to foster a strong community between a college, its current students, and its distinguished alumni.
