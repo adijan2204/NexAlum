@@ -25,7 +25,8 @@
                     Admin</span></h1>
             <div class="flex items-center space-x-3 md:space-x-6">
                 <span class="font-semibold text-gray-700 hidden md:inline">Administrator</span>
-                <button onclick="logout()" class="text-red-500 font-medium hover:underline text-sm md:text-base">Logout</button>
+                <button onclick="logout()"
+                    class="text-red-500 font-medium hover:underline text-sm md:text-base">Logout</button>
             </div>
         </div>
     </nav>
@@ -34,7 +35,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50">
                 <p class="text-gray-500 font-semibold mb-2">Total Users</p>
-                <h3 class="text-4xl font-bold text-purple-900">00</h3>
+                <h3 class="text-4xl font-bold text-purple-900">22</h3>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50">
                 <p class="text-gray-500 font-semibold mb-2">Pending Approvals</p>
@@ -42,7 +43,7 @@
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-purple-50">
                 <p class="text-gray-500 font-semibold mb-2">Active Jobs</p>
-                <h3 class="text-4xl font-bold text-indigo-500">00</h3>
+                <h3 class="text-4xl font-bold text-indigo-500">08</h3>
             </div>
         </div>
 
@@ -52,31 +53,31 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left min-w-[600px] md:min-w-full">
-                <thead class="bg-gray-50 text-gray-500 text-sm uppercase">
-                    <tr>
-                        <th class="px-8 py-4 px-8">Full Name</th>
-                        <th class="px-8 py-4">Grad Year</th>
-                        <th class="px-8 py-4">Company</th>
-                        <th class="px-8 py-4">Status</th>
-                        <th class="px-8 py-4">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50">
-                    <tr>
-                        <td class="px-8 py-6 font-semibold">Mansi Mate</td>
-                        <td class="px-8 py-6">2026</td>
-                        <td class="px-8 py-6">Amazon</td>
-                        <td class="px-8 py-6"><span
-                                class="px-3 py-1 rounded-full bg-orange-50 text-orange-500 text-xs font-bold uppercase">Pending</span>
-                        </td>
-                        <td class="px-8 py-6 space-x-2">
-                            <button
-                                class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold text-xs">Approve</button>
-                            <button
-                                class="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 font-bold text-xs">Reject</button>
-                        </td>
-                    </tr>
-                </tbody>
+                    <thead class="bg-gray-50 text-gray-500 text-sm uppercase">
+                        <tr>
+                            <th class="px-8 py-4 px-8">Full Name</th>
+                            <th class="px-8 py-4">Grad Year</th>
+                            <th class="px-8 py-4">Company</th>
+                            <th class="px-8 py-4">Status</th>
+                            <th class="px-8 py-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr>
+                            <td class="px-8 py-6 font-semibold">Mansi Mate</td>
+                            <td class="px-8 py-6">2026</td>
+                            <td class="px-8 py-6">Amazon</td>
+                            <td class="px-8 py-6"><span
+                                    class="px-3 py-1 rounded-full bg-orange-50 text-orange-500 text-xs font-bold uppercase">Pending</span>
+                            </td>
+                            <td class="px-8 py-6 space-x-2">
+                                <button
+                                    class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold text-xs">Approve</button>
+                                <button
+                                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 font-bold text-xs">Reject</button>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -129,7 +130,7 @@
         async function approveUser(id) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`/api/users/approve/${id}`, { 
+                const res = await fetch(`/api/users/approve/${id}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
