@@ -54,6 +54,15 @@
             border: 1px solid #F3F4F6;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
+
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%) !important;
+            color: white !important;
+        }
     </style>
 </head>
 
@@ -73,15 +82,15 @@
         <!-- Sidebar -->
         <aside class="md:w-64 space-y-4">
             <button onclick="showSection('messages')"
-                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
                 <span class="font-bold">Chat Requests</span>
             </button>
             <button onclick="showSection('alumni-chats')"
-                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
                 <span class="font-bold">My Chats</span>
             </button>
             <button onclick="showSection('profile-update')"
-                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm hover:purple-gradient hover:text-white transition group">
+                class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
                 <span class="font-bold">Update Profile</span>
             </button>
         </aside>
@@ -216,17 +225,14 @@
             window.location.href = '../../index.html';
         }
 
-        function loadRequests() {
+        async function loadRequests() {
             const list = document.getElementById('requestList');
-            const pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
-
+            
+            // 1. SHOW LOCAL STORAGE REQUESTS (LEGACY)
+            const pendingLocal = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
             list.innerHTML = '';
-            if (pending.length === 0) {
-                list.innerHTML = '<div class="flex flex-col items-center justify-center py-12 text-gray-400 opacity-50"><p>No pending requests.</p></div>';
-                return;
-            }
-
-            pending.forEach(name => {
+            
+            pendingLocal.forEach(name => {
                 list.innerHTML += `
                     <div class="p-6 border border-purple-50 rounded-2xl flex justify-between items-center bg-gray-50/50">
                         <div>
@@ -234,12 +240,40 @@
                             <p class="text-sm text-gray-500 italic">"Hello, I want to connect with you."</p>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="acceptRequest('${name}')" class="px-6 py-2 purple-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-100">Accept</button>
+                            <button onclick="acceptRequestLocal('${name}')" class="px-6 py-2 purple-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-100">Accept</button>
                             <button class="px-6 py-2 bg-white text-gray-400 border border-gray-100 rounded-xl text-sm font-bold">Ignore</button>
                         </div>
                     </div>
                 `;
             });
+
+            // 2. FETCH REAL REQUESTS FROM BACKEND
+            try {
+                const res = await fetch('/api/users/pending-requests');
+                if (res.ok) {
+                    const requests = await res.json();
+                    requests.forEach(req => {
+                        list.innerHTML += `
+                            <div class="p-6 border border-purple-50 rounded-2xl flex justify-between items-center bg-white shadow-sm">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">${req.student.fullName}</h4>
+                                    <p class="text-[10px] text-purple-600 font-bold uppercase">Class of ${req.student.graduationYear || 'N/A'}</p>
+                                    <p class="text-sm text-gray-500 italic mt-1">"${req.message}"</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="acceptRequest('${req._id}', '${req.student.fullName}')" class="px-6 py-2 purple-gradient text-white rounded-xl text-sm font-bold shadow-lg">Accept Request</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.log('Backend sync failed');
+            }
+
+            if (list.innerHTML === '') {
+                list.innerHTML = '<div class="flex flex-col items-center justify-center py-12 text-gray-400 opacity-50"><p>No pending requests.</p></div>';
+            }
         }
 
         function loadStudentContacts() {
@@ -305,7 +339,26 @@
             }
         }
 
-        function acceptRequest(name) {
+        async function acceptRequest(requestId, studentName) {
+            try {
+                const res = await fetch(`/api/users/accept-request/${requestId}`, {
+                    method: 'PUT'
+                });
+                if (res.ok) {
+                    // Also add to local accepted so chat works with existing logic
+                    let accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
+                    if (!accepted.includes(studentName)) accepted.push(studentName);
+                    localStorage.setItem('acceptedRequests', JSON.stringify(accepted));
+                    
+                    alert('Connection Accepted!');
+                    loadRequests();
+                }
+            } catch (err) {
+                alert('Action failed');
+            }
+        }
+
+        function acceptRequestLocal(name) {
             let accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
             if (!accepted.includes(name)) accepted.push(name);
             localStorage.setItem('acceptedRequests', JSON.stringify(accepted));
@@ -320,9 +373,27 @@
 
         document.getElementById('userName').innerText = localStorage.getItem('fullName') || 'Alumnus';
 
-        document.getElementById('profileForm').addEventListener('submit', (e) => {
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('Professional profile updated successfully!');
+            const bio = document.getElementById('profileBio').value;
+            const skills = document.getElementById('profileSkills').value.split(',').map(s => s.trim());
+            const linkedIn = document.getElementById('profileLinkedIn').value;
+            
+            try {
+                const res = await fetch('/api/users/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, skills, linkedIn })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Professional profile updated successfully!');
+                } else {
+                    alert(data.message || 'Update failed');
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
         });
 
         window.onload = () => {

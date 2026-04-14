@@ -14,9 +14,44 @@ const seedData = async () => {
         await User.deleteMany({});
         await Job.deleteMany({});
 
-        // Create Admin
+        // Create Static Users for Testing (Same as app.js)
+        const staticUsers = [
+            { 
+                fullName: 'System Admin', 
+                email: 'shruti@1007.com', 
+                password: 'shruti', 
+                role: 'admin', 
+                isApproved: true 
+            },
+            { 
+                fullName: 'Vaishanavi', 
+                email: 'vaishu@0910.com', 
+                password: 'vaishu', 
+                role: 'alumni', 
+                isApproved: true,
+                graduationYear: 2026,
+                currentCompany: 'Meta',
+                jobTitle: 'UI/UX Designer',
+                bio: 'Designing premium experiences.',
+                skills: ['Figma', 'UI Design']
+            },
+            { 
+                fullName: 'Mansi', 
+                email: 'mansi@1007.com', 
+                password: 'mansi', 
+                role: 'student', 
+                isApproved: true 
+            }
+        ];
+
+        for (const u of staticUsers) {
+            const user = new User(u);
+            await user.save();
+        }
+
+        // Create General Admin
         const admin = new User({
-            fullName: 'System Admin',
+            fullName: 'General Admin',
             email: 'admin@nexalum.com',
             password: 'password123',
             role: 'admin',

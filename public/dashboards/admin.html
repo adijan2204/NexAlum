@@ -90,8 +90,12 @@
                 const tableBody = document.querySelector('tbody');
                 tableBody.innerHTML = '';
 
+                let pendingCount = 0;
+                let totalCount = alumni.length;
+
                 alumni.forEach(user => {
                     if (!user.isApproved) {
+                        pendingCount++;
                         tableBody.innerHTML += `
                             <tr>
                                 <td class="px-8 py-6 font-semibold">${user.fullName}</td>
@@ -106,6 +110,10 @@
                         `;
                     }
                 });
+
+                // Update Stats
+                document.querySelectorAll('h3')[0].innerText = totalCount.toString().padStart(2, '0');
+                document.querySelectorAll('h3')[1].innerText = pendingCount.toString().padStart(2, '0');
 
                 if (tableBody.innerHTML === '') {
                     tableBody.innerHTML = '<tr><td colspan="5" class="px-8 py-10 text-center text-gray-400">All applications processed.</td></tr>';

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => { // Added async
             e.preventDefault();
             const email = document.getElementById('email').value.toLowerCase();
             const password = document.getElementById('password').value;
@@ -39,11 +39,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 role = 'student';
                 name = 'Mansi';
             } else {
-                showToast('Invalid Email or Password!', 'error');
-                return;
+                // BACKEND LOGIN FALLBACK
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        role = data.role;
+                        name = data.fullName;
+                        localStorage.setItem('token', data.token);
+                    } else {
+                        showToast(data.message || 'Invalid Email or Password!', 'error');
+                        return;
+                    }
+                } catch (error) {
+                    showToast('Connection failed!', 'error');
+                    return;
+                }
             }
 
-            localStorage.setItem('token', 'static-token-nexalum');
+            if (!localStorage.getItem('token')) {
+                localStorage.setItem('token', 'static-token-nexalum');
+            }
             localStorage.setItem('role', role);
             localStorage.setItem('fullName', name);
 
@@ -59,4 +79,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 800);
         });
     }
+
+    // REGISTRATION LOGIC
+    const regForm = document.getElementById('modalRegisterForm');
+    if (regForm) {
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('regFullName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            const graduationYear = document.getElementById('regGradYear').value;
+            const college = document.getElementById('regCollege').value;
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email, password, role, graduationYear, college })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Registration failed!', 'error');
+            }
+        });
+    }
 });
+

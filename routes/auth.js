@@ -6,7 +6,7 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     try {
         console.log('Register request received:', req.body);
-        const { fullName, email, password, role, graduationYear, currentCompany, jobTitle, linkedIn } = req.body;
+        const { fullName, email, password, role, graduationYear, currentCompany, jobTitle, linkedIn, phone, college } = req.body;
         
         if (!email || !password || !fullName) {
             return res.status(400).json({ message: 'Full Name, Email and Password are required' });
@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
         const approvalStatus = (role === 'student' || role === 'admin') ? true : false;
 
         const user = new User({
-            fullName, email, password, role, graduationYear, currentCompany, jobTitle, linkedIn,
+            fullName, email, password, role, graduationYear, currentCompany, jobTitle, linkedIn, phone, college,
             isApproved: approvalStatus
         });
         await user.save();
