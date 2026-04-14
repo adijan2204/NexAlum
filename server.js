@@ -25,8 +25,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/users', require('./routes/users'));
 
-// Fallback for HTML pages
-app.get('*', (req, res) => {
+// Fallback for HTML pages - catch all other routes
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 

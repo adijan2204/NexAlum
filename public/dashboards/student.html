@@ -263,7 +263,10 @@
             allAlumniData = [...staticAlumni];
 
             try {
-                const res = await fetch('/api/users/alumni'); 
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/users/alumni', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     const realAlumni = await res.json();
                     realAlumni.forEach(a => {
@@ -302,7 +305,7 @@
             
             data.forEach(a => {
                 const initials = a.fullName.split(' ').map(n => n[0]).join('');
-                const id = a._id || null;
+                const id = a._id || ''; // FIXED: Use empty string instead of null to avoid "null" string conversion
                 const company = a.currentCompany || 'Company';
                 const role = a.jobTitle || 'Alumnus';
                 const bio = a.bio || (a.id ? a.bio : 'Available for mentorship.');
@@ -442,7 +445,7 @@
         }
 
         async function sendConnectRequest() {
-            if (!activeAlumnusId) {
+            if (!activeAlumnusId || activeAlumnusId === 'null' || activeAlumnusId === 'undefined') {
                 // FALLBACK FOR STATIC DATA
                 let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
                 if (!pending.includes(activeAlumnus)) {
@@ -455,17 +458,27 @@
             }
 
             try {
+                const token = localStorage.getItem('token');
                 const res = await fetch('/api/users/connect', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ alumnusId: activeAlumnusId })
                 });
                 const data = await res.json();
                 if (res.ok) {
                     showToast('Request Sent Successfully!', 'success');
+                    // Update local pending list to show UI change immediately
+                    let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+                    if (!pending.includes(activeAlumnus)) {
+                        pending.push(activeAlumnus);
+                        localStorage.setItem('pendingRequests', JSON.stringify(pending));
+                    }
                     openChat(activeAlumnus, activeAlumnusId);
                 } else {
-                    showToast(data.message, 'error');
+                    showToast(data.message || 'Failed to send request', 'error');
                 }
             } catch (err) {
                 showToast('Connection failed', 'error');

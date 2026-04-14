@@ -25,37 +25,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value.toLowerCase();
             const password = document.getElementById('password').value;
 
-            // DEFINED STATIC CREDENTIALS
-            let role = '';
-            let name = '';
-
-            if (email === 'shruti@1007.com' && password === 'shruti') {
-                role = 'admin';
-                name = 'System Admin';
-            } else if (email === 'vaishu@0910.com' && password === 'vaishu') {
-                role = 'alumni';
-                name = 'Vaishanavi ';
-            } else if (email === 'mansi@1007.com' && password === 'mansi') {
-                role = 'student';
-                name = 'Mansi';
-            } else {
-                // BACKEND LOGIN FALLBACK
-                try {
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password })
-                    });
-                    const data = await response.json();
-                    if (response.ok) {
-                        role = data.role;
-                        name = data.fullName;
-                        localStorage.setItem('token', data.token);
-                    } else {
-                        showToast(data.message || 'Invalid Email or Password!', 'error');
-                        return;
-                    }
-                } catch (error) {
+            // TRY BACKEND LOGIN FIRST
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    role = data.role;
+                    name = data.fullName;
+                    localStorage.setItem('token', data.token);
+                } else if (email === 'shruti@1007.com' && password === 'shruti') {
+                    // STATIC FALLBACK
+                    role = 'admin';
+                    name = 'System Admin';
+                } else if (email === 'vaishu@0910.com' && password === 'vaishu') {
+                    role = 'alumni';
+                    name = 'Vaishanavi ';
+                } else if (email === 'mansi@1007.com' && password === 'mansi') {
+                    role = 'student';
+                    name = 'Mansi';
+                } else {
+                    showToast(data.message || 'Invalid Email or Password!', 'error');
+                    return;
+                }
+            } catch (error) {
+                // NETWORK ERROR OR SERVER DOWN - TRY STATIC FALLBACK
+                if (email === 'shruti@1007.com' && password === 'shruti') {
+                    role = 'admin';
+                    name = 'System Admin';
+                } else if (email === 'vaishu@0910.com' && password === 'vaishu') {
+                    role = 'alumni';
+                    name = 'Vaishanavi ';
+                } else if (email === 'mansi@1007.com' && password === 'mansi') {
+                    role = 'student';
+                    name = 'Mansi';
+                } else {
                     showToast('Connection failed!', 'error');
                     return;
                 }
@@ -90,23 +97,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('regPassword').value;
             const role = document.getElementById('regRole').value;
             const graduationYear = document.getElementById('regGradYear').value;
+            const phone = document.getElementById('regPhone').value;
             const college = document.getElementById('regCollege').value;
+
+            if (!role) {
+                showToast('Please select a role (Student or Alumni)', 'error');
+                return;
+            }
 
             try {
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullName, email, password, role, graduationYear, college })
+                    body: JSON.stringify({ fullName, email, password, role, graduationYear, phone, college })
                 });
                 const data = await response.json();
                 if (response.ok) {
                     showToast(data.message, 'success');
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    showToast(data.message, 'error');
+                    showToast(data.message || 'Registration failed!', 'error');
                 }
             } catch (error) {
-                showToast('Registration failed!', 'error');
+                showToast('Connection error during registration!', 'error');
             }
         });
     }

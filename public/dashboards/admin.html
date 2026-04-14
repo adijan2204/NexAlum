@@ -85,7 +85,10 @@
     <script>
         async function fetchPendingAlumni() {
             try {
-                const res = await fetch('/api/users/alumni');
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/users/alumni', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const alumni = await res.json();
                 const tableBody = document.querySelector('tbody');
                 tableBody.innerHTML = '';
@@ -125,7 +128,11 @@
 
         async function approveUser(id) {
             try {
-                const res = await fetch(`/api/users/approve/${id}`, { method: 'PUT' });
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/users/approve/${id}`, { 
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     alert('User approved!');
                     fetchPendingAlumni();

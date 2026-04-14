@@ -249,7 +249,10 @@
 
             // 2. FETCH REAL REQUESTS FROM BACKEND
             try {
-                const res = await fetch('/api/users/pending-requests');
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/users/pending-requests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     const requests = await res.json();
                     requests.forEach(req => {
@@ -341,8 +344,10 @@
 
         async function acceptRequest(requestId, studentName) {
             try {
+                const token = localStorage.getItem('token');
                 const res = await fetch(`/api/users/accept-request/${requestId}`, {
-                    method: 'PUT'
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     // Also add to local accepted so chat works with existing logic
@@ -380,9 +385,13 @@
             const linkedIn = document.getElementById('profileLinkedIn').value;
             
             try {
+                const token = localStorage.getItem('token');
                 const res = await fetch('/api/users/profile', {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ bio, skills, linkedIn })
                 });
                 const data = await res.json();
