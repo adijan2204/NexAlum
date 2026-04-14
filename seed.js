@@ -24,7 +24,7 @@ const seedData = async () => {
                 isApproved: true 
             },
             { 
-                fullName: 'Vaishanavi', 
+                fullName: 'Vaishanavi Maraskolhe', 
                 email: 'vaishu@0910.com', 
                 password: 'vaishu', 
                 role: 'alumni', 
@@ -36,7 +36,7 @@ const seedData = async () => {
                 skills: ['Figma', 'UI Design']
             },
             { 
-                fullName: 'Mansi', 
+                fullName: 'Mansi Mate', 
                 email: 'mansi@1007.com', 
                 password: 'mansi', 
                 role: 'student', 
@@ -49,20 +49,10 @@ const seedData = async () => {
             await user.save();
         }
 
-        // Create General Admin
-        const admin = new User({
-            fullName: 'General Admin',
-            email: 'admin@nexalum.com',
-            password: 'password123',
-            role: 'admin',
-            isApproved: true
-        });
-        await admin.save();
-
-        // Create Alumni
+        // Create Avengers Alumni
         const alums = [
-            { fullName: 'John Doe', email: 'john@example.com', password: 'password123', role: 'alumni', isApproved: true, graduationYear: 2018, currentCompany: 'Google', jobTitle: 'Senior Dev' },
-            { fullName: 'Alice Smith', email: 'alice@example.com', password: 'password123', role: 'alumni', isApproved: true, graduationYear: 2015, currentCompany: 'Meta', jobTitle: 'PM' }
+            { fullName: 'Tony Stark', email: 'tony@stark.com', password: 'ironman', role: 'alumni', isApproved: true, graduationYear: 2008, currentCompany: 'Stark Industries', jobTitle: 'CEO' },
+            { fullName: 'Steve Rogers', email: 'steve@rogers.com', password: 'cap', role: 'alumni', isApproved: true, graduationYear: 1941, currentCompany: 'US Army', jobTitle: 'Captain' }
         ];
 
         const savedAlums = await User.insertMany(alums);

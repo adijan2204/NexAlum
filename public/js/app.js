@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // TRY BACKEND LOGIN FIRST
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -43,10 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     name = 'System Admin';
                 } else if (email === 'vaishu@0910.com' && password === 'vaishu') {
                     role = 'alumni';
-                    name = 'Vaishanavi ';
+                    name = 'Vaishanavi Maraskolhe';
                 } else if (email === 'mansi@1007.com' && password === 'mansi') {
                     role = 'student';
-                    name = 'Mansi';
+                    name = 'Mansi Mate';
+                } else if (email === 'tony@stark.com' && password === 'ironman') {
+                    role = 'alumni';
+                    name = 'Tony Stark';
+                } else if (email === 'steve@rogers.com' && password === 'cap') {
+                    role = 'alumni';
+                    name = 'Steve Rogers';
                 } else {
                     showToast(data.message || 'Invalid Email or Password!', 'error');
                     return;
@@ -58,10 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     name = 'System Admin';
                 } else if (email === 'vaishu@0910.com' && password === 'vaishu') {
                     role = 'alumni';
-                    name = 'Vaishanavi ';
+                    name = 'Vaishanavi Maraskolhe';
                 } else if (email === 'mansi@1007.com' && password === 'mansi') {
                     role = 'student';
-                    name = 'Mansi';
+                    name = 'Mansi Mate';
+                } else if (email === 'tony@stark.com' && password === 'ironman') {
+                    role = 'alumni';
+                    name = 'Tony Stark';
+                } else if (email === 'steve@rogers.com' && password === 'cap') {
+                    role = 'alumni';
+                    name = 'Steve Rogers';
                 } else {
                     showToast('Connection failed!', 'error');
                     return;
@@ -87,41 +99,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // REGISTRATION LOGIC
-    const regForm = document.getElementById('modalRegisterForm');
-    if (regForm) {
-        regForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = document.getElementById('regFullName').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
+    // STATIC REGISTRATION LOGIC (NO BACKEND REQUIRED)
+    const registrationForm = document.getElementById('modalRegisterForm');
+    if (registrationForm) {
+        registrationForm.onsubmit = (event) => {
+            event.preventDefault();
+
+            // Collect dummy data
             const role = document.getElementById('regRole').value;
-            const graduationYear = document.getElementById('regGradYear').value;
-            const phone = document.getElementById('regPhone').value;
-            const college = document.getElementById('regCollege').value;
+            const name = document.getElementById('regFullName').value;
 
             if (!role) {
-                showToast('Please select a role (Student or Alumni)', 'error');
-                return;
+                return showToast('Please select a role (Student or Alumni)', 'error');
             }
 
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullName, email, password, role, graduationYear, phone, college })
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    showToast(data.message, 'success');
-                    setTimeout(() => window.location.reload(), 2000);
-                } else {
-                    showToast(data.message || 'Registration failed!', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error during registration!', 'error');
-            }
-        });
+            // SIMULATE SUCCESSFUL REGISTRATION
+            showToast(`Welcome ${name}! Registration successful.`, 'success');
+
+            // Optional: Store registration info locally to simulate persistence
+            localStorage.setItem('isRegistered', 'true');
+            localStorage.setItem('registeredRole', role);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        };
     }
 });
 

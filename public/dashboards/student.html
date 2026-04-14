@@ -199,20 +199,16 @@
 
     <script>
         const staticAlumni = [
-            { id: 1, fullName: "Shruti Ingole", jobTitle: "Lead Developer", currentCompany: "NexAlum", graduationYear: 2026, bio: "Building the future of alumni networking.", skills: ["React", "Node.js"] },
-            { id: 2, fullName: "Vaishnavi Maraskolhe", jobTitle: "UI/UX Designer", currentCompany: "Meta", graduationYear: 2026, bio: "Designing premium experiences.", skills: ["Figma", "UI Design"] },
-            { id: 3, fullName: "Mansi Mate", jobTitle: "Backend Expert", currentCompany: "Google", graduationYear: 2025, bio: "Scalability is my middle name.", skills: ["Go", "Kubernetes"] }
+            { id: 1, fullName: "Vaishanavi Maraskolhe", jobTitle: "UI/UX Designer", currentCompany: "Meta", graduationYear: 2026, bio: "Designing premium experiences.", skills: ["Figma", "UI Design"] },
+            { id: 2, fullName: "Tony Stark", jobTitle: "CEO & Iron Man", currentCompany: "Stark Industries", graduationYear: 2008, bio: "Genius, billionaire, playboy, philanthropist.", skills: ["Engineering", "AI"] },
+            { id: 3, fullName: "Steve Rogers", jobTitle: "Captain America", currentCompany: "US Army", graduationYear: 1941, bio: "I can do this all day.", skills: ["Leadership", "Strategy"] },
+            { id: 4, fullName: "Natasha Romanoff", jobTitle: "Black Widow", currentCompany: "SHIELD", graduationYear: 2010, bio: "At some point we all have to choose between what the world wants you to be and who you are.", skills: ["Intelligence", "Martial Arts"] },
+            { id: 5, fullName: "Bruce Banner", jobTitle: "The Hulk", currentCompany: "Avengers", graduationYear: 2012, bio: "That's my secret, Cap. I'm always angry.", skills: ["Gamma Radiation", "Physics"] }
         ];
 
         const chatHistories = {
-            "Shruti Ingole": [
-                { sender: "alumni", text: "Hello! Thanks for connecting." },
-                { sender: "student", text: "Hi Shruti! I'm really impressed by your NexAlum project." },
-                { sender: "alumni", text: "Thank you! I'd be happy to guide you on React and development best practices." },
-                { sender: "student", text: "That would be awesome! When are you free for a quick call?" }
-            ],
-            "Vaishnavi Maraskolhe": [
-                { sender: "student", text: "Hello, I want to connect with you" }
+            "Vaishanavi Maraskolhe": [
+                { sender: "alumni", text: "Hello Mansi! Welcome to the network." }
             ]
         };
 
@@ -250,21 +246,21 @@
         }
 
         async function loadData() { // Added async
-            document.getElementById('userName').innerText = localStorage.getItem('fullName') || 'Student';
+            document.getElementById('userName').innerText = 'Mansi Mate';
             
-            // INITIALIZE DEMO DATA
-            if (!localStorage.getItem('acceptedRequests')) {
-                localStorage.setItem('acceptedRequests', JSON.stringify(["Shruti Ingole"]));
+            // INITIALIZE DEMO DATA (Empty for test scenario)
+            if (!localStorage.getItem('connectedAlumni')) {
+                localStorage.setItem('connectedAlumni', JSON.stringify([])); 
             }
-            if (!localStorage.getItem('pendingRequests')) {
-                localStorage.setItem('pendingRequests', JSON.stringify(["Vaishnavi Maraskolhe"]));
+            if (!localStorage.getItem('sentRequests')) {
+                localStorage.setItem('sentRequests', JSON.stringify([]));
             }
 
             allAlumniData = [...staticAlumni];
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/users/alumni', {
+                const res = await fetch('http://localhost:3000/api/users/alumni', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -343,8 +339,8 @@
 
         function loadChatContacts() {
             const sidebar = document.getElementById('contactsSidebar');
-            const accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
-            const pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+            const accepted = JSON.parse(localStorage.getItem('connectedAlumni') || '[]');
+            const pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
 
             sidebar.innerHTML = '';
             const allAlumni = [...new Set([...accepted, ...pending])];
@@ -379,8 +375,8 @@
             document.getElementById('chatWith').innerText = name;
             document.getElementById('activeAlumnusInitials').innerText = name[0];
 
-            const accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
-            const pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+            const accepted = JSON.parse(localStorage.getItem('connectedAlumni') || '[]');
+            const pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
 
             const isAccepted = accepted.includes(name);
             const isPending = pending.includes(name);
@@ -445,12 +441,20 @@
         }
 
         async function sendConnectRequest() {
+            // ALWAYS save sender (Student) name for the Alumni to see locally (Demo Mode)
+            let incoming = JSON.parse(localStorage.getItem('staticIncomingRequests') || '[]');
+            const studentName = 'Mansi Mate'; // Hardcoded for your demo as requested
+            if (!incoming.includes(studentName)) {
+                incoming.push(studentName);
+                localStorage.setItem('staticIncomingRequests', JSON.stringify(incoming));
+            }
+
             if (!activeAlumnusId || activeAlumnusId === 'null' || activeAlumnusId === 'undefined') {
-                // FALLBACK FOR STATIC DATA
-                let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+                // FALLBACK FOR STATIC DATA (SHARED LOCAL STORAGE DEMO)
+                let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
                 if (!pending.includes(activeAlumnus)) {
                     pending.push(activeAlumnus);
-                    localStorage.setItem('pendingRequests', JSON.stringify(pending));
+                    localStorage.setItem('sentRequests', JSON.stringify(pending));
                 }
                 showToast('Request Sent (Local Only)!', 'success');
                 openChat(activeAlumnus);
@@ -459,7 +463,7 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/users/connect', {
+                const res = await fetch('http://localhost:3000/api/users/connect', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -471,17 +475,31 @@
                 if (res.ok) {
                     showToast('Request Sent Successfully!', 'success');
                     // Update local pending list to show UI change immediately
-                    let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+                    let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
                     if (!pending.includes(activeAlumnus)) {
                         pending.push(activeAlumnus);
-                        localStorage.setItem('pendingRequests', JSON.stringify(pending));
+                        localStorage.setItem('sentRequests', JSON.stringify(pending));
                     }
                     openChat(activeAlumnus, activeAlumnusId);
                 } else {
-                    showToast(data.message || 'Failed to send request', 'error');
+                    // Even if API fails (e.g. DB down), we still show the local success for demo
+                    showToast('Request Sent (Demo Mode)!', 'success');
+                    let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
+                    if (!pending.includes(activeAlumnus)) {
+                        pending.push(activeAlumnus);
+                        localStorage.setItem('sentRequests', JSON.stringify(pending));
+                    }
+                    openChat(activeAlumnus);
                 }
             } catch (err) {
-                showToast('Connection failed', 'error');
+                // Connection failed? Mock it locally anyway for pure demo
+                showToast('Request Sent (Local Mode)!', 'success');
+                let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
+                if (!pending.includes(activeAlumnus)) {
+                    pending.push(activeAlumnus);
+                    localStorage.setItem('sentRequests', JSON.stringify(pending));
+                }
+                openChat(activeAlumnus);
             }
         }
 

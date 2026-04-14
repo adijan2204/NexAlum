@@ -111,7 +111,8 @@
 
             <!-- Chat Section -->
             <section id="alumni-chats" class="section-content hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-purple-50 flex flex-col md:flex-row chat-container overflow-hidden">
+                <div
+                    class="bg-white rounded-3xl shadow-sm border border-purple-50 flex flex-col md:flex-row chat-container overflow-hidden">
                     <!-- Contacts Sidebar -->
                     <div class="contact-list flex flex-col bg-gray-50/30">
                         <div class="p-6 border-b border-purple-50 bg-white">
@@ -203,11 +204,8 @@
 
     <script>
         const studentHistories = {
-            "Anacleto": [
-                { sender: "alumni", text: "Hello Anacleto! Thanks for connecting." },
-                { sender: "student", text: "Hi Vaishanavi! I'm really impressed by your NexAlum project." },
-                { sender: "alumni", text: "Thank you! I'd be happy to guide you on React and development best practices." },
-                { sender: "student", text: "That would be awesome! When are you free for a quick call?" }
+            "Mansi Mate": [
+                { sender: "student", text: "Hello Vaishu! I sent you a connection request." }
             ]
         };
 
@@ -227,20 +225,20 @@
 
         async function loadRequests() {
             const list = document.getElementById('requestList');
-            
-            // 1. SHOW LOCAL STORAGE REQUESTS (LEGACY)
-            const pendingLocal = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
+
+            // 1. SHOW LOCAL STORAGE REQUESTS (LEGACY / STATIC DEMO)
+            const incomingLocal = JSON.parse(localStorage.getItem('staticIncomingRequests') || '[]');
             list.innerHTML = '';
-            
-            pendingLocal.forEach(name => {
+
+            incomingLocal.forEach(studentName => {
                 list.innerHTML += `
                     <div class="p-6 border border-purple-50 rounded-2xl flex justify-between items-center bg-gray-50/50">
                         <div>
-                            <h4 class="font-bold text-gray-900">${name}</h4>
+                            <h4 class="font-bold text-gray-900">${studentName}</h4>
                             <p class="text-sm text-gray-500 italic">"Hello, I want to connect with you."</p>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="acceptRequestLocal('${name}')" class="px-6 py-2 purple-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-100">Accept</button>
+                            <button onclick="acceptRequestLocal('${studentName}')" class="px-6 py-2 purple-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-purple-100">Accept</button>
                             <button class="px-6 py-2 bg-white text-gray-400 border border-gray-100 rounded-xl text-sm font-bold">Ignore</button>
                         </div>
                     </div>
@@ -250,7 +248,7 @@
             // 2. FETCH REAL REQUESTS FROM BACKEND
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/users/pending-requests', {
+                const res = await fetch('http://localhost:3000/api/users/pending-requests', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -281,7 +279,7 @@
 
         function loadStudentContacts() {
             const sidebar = document.getElementById('contactsSidebar');
-            const accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
+            const accepted = JSON.parse(localStorage.getItem('connectedStudents') || '[]');
 
             sidebar.innerHTML = '';
             if (accepted.length === 0) {
@@ -345,16 +343,16 @@
         async function acceptRequest(requestId, studentName) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`/api/users/accept-request/${requestId}`, {
+                const res = await fetch(`http://localhost:3000/api/users/accept-request/${requestId}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     // Also add to local accepted so chat works with existing logic
-                    let accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
+                    let accepted = JSON.parse(localStorage.getItem('connectedStudents') || '[]');
                     if (!accepted.includes(studentName)) accepted.push(studentName);
-                    localStorage.setItem('acceptedRequests', JSON.stringify(accepted));
-                    
+                    localStorage.setItem('connectedStudents', JSON.stringify(accepted));
+
                     alert('Connection Accepted!');
                     loadRequests();
                 }
@@ -363,32 +361,45 @@
             }
         }
 
-        function acceptRequestLocal(name) {
-            let accepted = JSON.parse(localStorage.getItem('acceptedRequests') || '[]');
-            if (!accepted.includes(name)) accepted.push(name);
-            localStorage.setItem('acceptedRequests', JSON.stringify(accepted));
+        function acceptRequestLocal(studentName) {
+            // 1. Add to Alumni's accepted list
+            let accepted = JSON.parse(localStorage.getItem('connectedStudents') || '[]');
+            if (!accepted.includes(studentName)) accepted.push(studentName);
+            localStorage.setItem('connectedStudents', JSON.stringify(accepted));
 
-            let pending = JSON.parse(localStorage.getItem('pendingRequests') || '[]');
-            pending = pending.filter(p => p !== name);
-            localStorage.setItem('pendingRequests', JSON.stringify(pending));
+            // 2. Remove from staticIncomingRequests
+            let incoming = JSON.parse(localStorage.getItem('staticIncomingRequests') || '[]');
+            incoming = incoming.filter(s => s !== studentName);
+            localStorage.setItem('staticIncomingRequests', JSON.stringify(incoming));
 
-            alert('Connection Accepted! ' + name + ' can now receive your messages.');
+            // 3. Mark for student as connected (Hardcoded Vaishanavi for demo sync)
+            let studentConnected = JSON.parse(localStorage.getItem('connectedAlumni') || '[]');
+            const alumniName = "Vaishanavi Maraskolhe";
+            if (!studentConnected.includes(alumniName)) studentConnected.push(alumniName);
+            localStorage.setItem('connectedAlumni', JSON.stringify(studentConnected));
+
+            // 4. Clean up student's outbound pending list
+            let sentRequests = JSON.parse(localStorage.getItem('sentRequests') || '[]');
+            sentRequests = sentRequests.filter(a => a !== alumniName);
+            localStorage.setItem('sentRequests', JSON.stringify(sentRequests));
+
+            alert('Connection Accepted! ' + studentName + ' can now receive your messages.');
             loadRequests();
         }
 
-        document.getElementById('userName').innerText = localStorage.getItem('fullName') || 'Alumnus';
+        document.getElementById('userName').innerText = 'Vaishanavi Maraskolhe';
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const bio = document.getElementById('profileBio').value;
             const skills = document.getElementById('profileSkills').value.split(',').map(s => s.trim());
             const linkedIn = document.getElementById('profileLinkedIn').value;
-            
+
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/users/profile', {
+                const res = await fetch('http://localhost:3000/api/users/profile', {
                     method: 'PUT',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
@@ -406,9 +417,9 @@
         });
 
         window.onload = () => {
-            // Demo data initialization for Alumni as well
-            if (!localStorage.getItem('acceptedRequests')) {
-                localStorage.setItem('acceptedRequests', JSON.stringify([]));
+            // Demo data initialization for Alumni
+            if (!localStorage.getItem('connectedStudents')) {
+                localStorage.setItem('connectedStudents', JSON.stringify([]));
             }
             loadRequests();
         };
