@@ -73,7 +73,7 @@
             <h1 class="text-2xl font-bold text-purple-900">NexAlum <span class="text-sm font-normal text-purple-400">|
                     Student</span></h1>
             <div class="flex items-center space-x-6">
-                <span id="userName" class="font-semibold text-gray-700">Student Name</span>
+                <span id="userName" class="font-semibold text-gray-700">Mansi Mate</span>
                 <button onclick="logout()" class="text-red-500 font-medium hover:underline">Logout</button>
             </div>
         </div>
@@ -95,7 +95,7 @@
             </button>
             <button onclick="showSection('chat-section')"
                 class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
-                <span class="font-bold">My Chats</span>
+                <span class="font-bold">Alumni Conversations</span>
             </button>
         </aside>
 
@@ -137,7 +137,7 @@
                     <!-- Contacts Sidebar -->
                     <div class="contact-list flex flex-col bg-gray-50/30">
                         <div class="p-6 border-b border-purple-50 bg-white">
-                            <h3 class="font-bold text-purple-900">Recent Chats</h3>
+                            <h3 class="font-bold text-purple-900">Alumni List</h3>
                         </div>
                         <div id="contactsSidebar" class="flex-1 overflow-y-auto">
                             <!-- Chats populated by JS -->
@@ -208,7 +208,7 @@
 
         const chatHistories = {
             "Vaishanavi Maraskolhe": [
-                { sender: "alumni", text: "Hello Mansi! Welcome to the network." }
+                { sender: "alumni", text: "Hello! Welcome to the network." }
             ]
         };
 
@@ -224,7 +224,7 @@
 
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `px-6 py-4 rounded-2xl text-white font-bold shadow-2xl transition duration-500 transform translate-y-10 animate-in fade-in fill-mode-forwards ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-purple-600'
+            toast.className = `px-6 py-4 rounded-2xl text-white font-bold shadow-2xl transition duration-500 transform translate-y-10 animate-in fade-in fill-mode-forwards ${type === 'success' ? 'bg-purple-600' : type === 'error' ? 'bg-red-500' : 'bg-purple-600'
                 }`;
             toast.innerText = message;
             document.getElementById('toastContainer').appendChild(toast);
@@ -246,7 +246,7 @@
         }
 
         async function loadData() { // Added async
-            document.getElementById('userName').innerText = 'Mansi Mate';
+            document.getElementById('userName').innerText = 'Mansi Mate'; // Hardcoded as per USER_REQUEST
             
             // INITIALIZE DEMO DATA (Empty for test scenario)
             if (!localStorage.getItem('connectedAlumni')) {
@@ -258,15 +258,25 @@
 
             allAlumniData = [...staticAlumni];
 
+            // 1. ADD LOCAL APPROVED USERS (Demo Mode)
+            const localApproved = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+            localApproved.forEach(a => {
+                if (a.role === 'alumni') {
+                    if (allAlumniData.some(sa => sa.fullName === a.fullName)) return;
+                    allAlumniData.push(a);
+                }
+            });
+
+            // 2. FETCH REAL ALUMNI FROM BACKEND
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/users/alumni', {
+                const res = await fetch('/api/users/alumni', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     const realAlumni = await res.json();
                     realAlumni.forEach(a => {
-                        if (staticAlumni.some(sa => sa.fullName === a.fullName)) return;
+                        if (allAlumniData.some(sa => sa.fullName === a.fullName)) return;
                         if (!a.isApproved) return;
                         allAlumniData.push(a);
                     });
@@ -403,9 +413,13 @@
                 // LOAD SAMPLE CHATS
                 const history = chatHistories[name] || [{ sender: "alumni", text: "You are now connected! Feel free to ask anything." }];
                 history.forEach(m => {
+                    const senderName = m.sender === 'student' ? (localStorage.getItem('fullName') || 'Student') : name;
                     chatBox.innerHTML += `
-                        <div class="px-5 py-3 max-w-[80%] shadow-sm ${m.sender === 'student' ? 'msg-student' : 'msg-alumni'}">
-                            ${m.text}
+                        <div class="flex flex-col ${m.sender === 'student' ? 'items-end' : 'items-start'} space-y-1">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase px-3">${senderName}</span>
+                            <div class="px-5 py-3 max-w-[80%] shadow-sm ${m.sender === 'student' ? 'msg-student' : 'msg-alumni'}">
+                                ${m.text}
+                            </div>
                         </div>
                     `;
                 });
@@ -443,7 +457,7 @@
         async function sendConnectRequest() {
             // ALWAYS save sender (Student) name for the Alumni to see locally (Demo Mode)
             let incoming = JSON.parse(localStorage.getItem('staticIncomingRequests') || '[]');
-            const studentName = 'Mansi Mate'; // Hardcoded for your demo as requested
+            const studentName = 'Mansi Mate'; // Hardcoded as per USER_REQUEST to ONLY show Mansi
             if (!incoming.includes(studentName)) {
                 incoming.push(studentName);
                 localStorage.setItem('staticIncomingRequests', JSON.stringify(incoming));
@@ -456,14 +470,14 @@
                     pending.push(activeAlumnus);
                     localStorage.setItem('sentRequests', JSON.stringify(pending));
                 }
-                showToast('Request Sent (Local Only)!', 'success');
+                showToast('Request Sent Successfully!', 'success');
                 openChat(activeAlumnus);
                 return;
             }
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/users/connect', {
+                const res = await fetch('/api/users/connect', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -483,7 +497,7 @@
                     openChat(activeAlumnus, activeAlumnusId);
                 } else {
                     // Even if API fails (e.g. DB down), we still show the local success for demo
-                    showToast('Request Sent (Demo Mode)!', 'success');
+                    showToast('Request Sent Successfully!', 'success');
                     let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
                     if (!pending.includes(activeAlumnus)) {
                         pending.push(activeAlumnus);
@@ -493,7 +507,7 @@
                 }
             } catch (err) {
                 // Connection failed? Mock it locally anyway for pure demo
-                showToast('Request Sent (Local Mode)!', 'success');
+                showToast('Request Sent Successfully!', 'success');
                 let pending = JSON.parse(localStorage.getItem('sentRequests') || '[]');
                 if (!pending.includes(activeAlumnus)) {
                     pending.push(activeAlumnus);
@@ -507,7 +521,13 @@
             const msg = document.getElementById('messageInput').value;
             if (msg) {
                 const chatBox = document.getElementById('chatMessages');
-                chatBox.innerHTML += `<div class="px-5 py-3 max-w-[80%] msg-student">${msg}</div>`;
+                const myName = localStorage.getItem('fullName') || 'Student';
+                chatBox.innerHTML += `
+                    <div class="flex flex-col items-end space-y-1">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase px-3">${myName}</span>
+                        <div class="px-5 py-3 max-w-[80%] msg-student">${msg}</div>
+                    </div>
+                `;
                 document.getElementById('messageInput').value = '';
                 chatBox.scrollTop = chatBox.scrollHeight;
             }

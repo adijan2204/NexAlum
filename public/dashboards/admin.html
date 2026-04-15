@@ -49,7 +49,8 @@
 
         <div class="bg-white rounded-3xl shadow-sm border border-purple-50 overflow-hidden">
             <div class="p-6 md:p-8 border-b border-gray-50">
-                <h2 class="text-xl md:text-2xl font-bold text-gray-900">Pending Alumni Registration</h2>
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900">Pending Registrations <span
+                        class="text-sm font-normal text-gray-400">(Students & Alumni)</span></h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left min-w-[600px] md:min-w-full">
@@ -84,35 +85,60 @@
     </div>
 
     <script>
-        async function fetchPendingAlumni() {
+        async function fetchPendingUsers() {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/users/alumni', {
+                const res = await fetch('/api/users/pending', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const alumni = await res.json();
+
+                let users = [];
+                if (res.ok) {
+                    users = await res.json();
+                }
+
+                // MERGE WITH LOCAL STORAGE USERS (Demo Mode)
+                const localUsers = JSON.parse(localStorage.getItem('pendingRegistrations') || '[]');
+                users = [...users, ...localUsers];
+
                 const tableBody = document.querySelector('tbody');
                 tableBody.innerHTML = '';
 
-                let pendingCount = 0;
-                let totalCount = alumni.length;
+                let pendingCount = users.length;
 
-                alumni.forEach(user => {
-                    if (!user.isApproved) {
-                        pendingCount++;
-                        tableBody.innerHTML += `
-                            <tr>
-                                <td class="px-8 py-6 font-semibold">${user.fullName}</td>
-                                <td class="px-8 py-6">${user.graduationYear || 'N/A'}</td>
-                                <td class="px-8 py-6">${user.currentCompany || 'N/A'}</td>
-                                <td class="px-8 py-6"><span class="px-3 py-1 rounded-full bg-orange-50 text-orange-500 text-xs font-bold uppercase">Pending</span></td>
-                                <td class="px-8 py-6 space-x-2">
-                                    <button onclick="approveUser('${user._id}')" class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold text-xs">Approve</button>
-                                    <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 font-bold text-xs">Reject</button>
-                                </td>
-                            </tr>
-                        `;
+                // Fetch total alumni just for the stats
+                let totalCount = 3; // Static Defaults (Shruti, Vaishu, Mansi)
+                const localApproved = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                totalCount += localApproved.length; // Add Approved Demo Users
+                totalCount += localUsers.length;    // Add Pending Demo Users
+
+                try {
+                    const totalRes = await fetch('/api/users/alumni', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (totalRes.ok) {
+                        const totalAlumni = await totalRes.json();
+                        totalCount += totalAlumni.length;
                     }
+                } catch (e) { }
+
+                users.forEach(user => {
+                    const isLocal = user._id.toString().startsWith('local_');
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td class="px-8 py-6">
+                                <div class="font-semibold text-gray-900">${user.fullName} ${isLocal ? '<span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">DEMO</span>' : ''}</div>
+                                <div class="text-xs text-gray-400 uppercase tracking-tighter">${user.role}</div>
+                            </td>
+                            <td class="px-8 py-6">${user.graduationYear || 'N/A'}</td>
+                            <td class="px-8 py-6">${user.currentCompany || 'N/A'}</td>
+                            <td class="px-8 py-6"><span class="px-3 py-1 rounded-full bg-orange-50 text-orange-500 text-xs font-bold uppercase">Pending</span></td>
+                            <td class="px-8 py-6 space-x-2">
+                                <button onclick="approveUser('${user._id}', ${isLocal})" class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition">Approve</button>
+                                <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-500 font-bold text-xs">Reject</button>
+                            </td>
+                        </tr>
+                    `;
                 });
 
                 // Update Stats
@@ -123,24 +149,77 @@
                     tableBody.innerHTML = '<tr><td colspan="5" class="px-8 py-10 text-center text-gray-400">All applications processed.</td></tr>';
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Fetch Error:', err);
+                // Even on error, show local users
+                const localUsers = JSON.parse(localStorage.getItem('pendingRegistrations') || '[]');
+                if (localUsers.length > 0) {
+                    renderLocalOnly(localUsers);
+                } else {
+                    const tableBody = document.querySelector('tbody');
+                    tableBody.innerHTML = '<tr><td colspan="5" class="px-8 py-10 text-center text-red-400">Error connecting to server.</td></tr>';
+                }
             }
         }
 
-        async function approveUser(id) {
+        function renderLocalOnly(users) {
+            const tableBody = document.querySelector('tbody');
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="px-8 py-6">
+                            <div class="font-semibold text-gray-900">${user.fullName} <span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">DEMO</span></div>
+                            <div class="text-xs text-gray-400 uppercase tracking-tighter">${user.role}</div>
+                        </td>
+                        <td class="px-8 py-6">${user.graduationYear || 'N/A'}</td>
+                        <td class="px-8 py-6">${user.currentCompany || 'N/A'}</td>
+                        <td class="px-8 py-6"><span class="px-3 py-1 rounded-full bg-orange-50 text-orange-500 text-xs font-bold uppercase">Pending</span></td>
+                        <td class="px-8 py-6 space-x-2">
+                            <button onclick="approveUser('${user._id}', true)" class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold text-xs">Approve</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.querySelectorAll('h3')[1].innerText = users.length.toString().padStart(2, '0');
+        }
+
+        async function approveUser(id, isLocal) {
             try {
+                if (isLocal) {
+                    let pending = JSON.parse(localStorage.getItem('pendingRegistrations') || '[]');
+                    let approved = JSON.parse(localStorage.getItem('approvedUsers') || '[]');
+                    const userIndex = pending.findIndex(u => u._id === id);
+                    if (userIndex > -1) {
+                        const user = pending.splice(userIndex, 1)[0];
+                        approved.push(user);
+                        localStorage.setItem('pendingRegistrations', JSON.stringify(pending));
+                        localStorage.setItem('approvedUsers', JSON.stringify(approved));
+                        showSuccessAlert();
+                        fetchPendingUsers();
+                    }
+                    return;
+                }
+
                 const token = localStorage.getItem('token');
                 const res = await fetch(`/api/users/approve/${id}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
-                    alert('User approved!');
-                    fetchPendingAlumni();
+                    showSuccessAlert();
+                    fetchPendingUsers();
                 }
             } catch (err) {
                 alert('Approval failed');
             }
+        }
+
+        function showSuccessAlert() {
+            const toast = document.createElement('div');
+            toast.className = "fixed top-24 right-8 bg-purple-600 text-white px-6 py-4 rounded-2xl font-bold shadow-2xl z-[100] animate-bounce";
+            toast.innerText = "User Approved Successfully!";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         function logout() {
@@ -148,7 +227,7 @@
             window.location.href = '../../index.html';
         }
 
-        window.onload = fetchPendingAlumni;
+        window.onload = fetchPendingUsers;
     </script>
 </body>
 

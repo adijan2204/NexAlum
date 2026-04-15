@@ -87,7 +87,7 @@
             </button>
             <button onclick="showSection('alumni-chats')"
                 class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
-                <span class="font-bold">My Chats</span>
+                <span class="font-bold">Student Conversations</span>
             </button>
             <button onclick="showSection('profile-update')"
                 class="w-full text-left px-6 py-4 rounded-2xl bg-white shadow-sm nav-btn group">
@@ -116,7 +116,7 @@
                     <!-- Contacts Sidebar -->
                     <div class="contact-list flex flex-col bg-gray-50/30">
                         <div class="p-6 border-b border-purple-50 bg-white">
-                            <h3 class="font-bold text-purple-900">Student Chats</h3>
+                            <h3 class="font-bold text-purple-900">Student List</h3>
                         </div>
                         <div id="contactsSidebar" class="flex-1 overflow-y-auto">
                             <!-- Populated by JS -->
@@ -205,7 +205,7 @@
     <script>
         const studentHistories = {
             "Mansi Mate": [
-                { sender: "student", text: "Hello Vaishu! I sent you a connection request." }
+                { sender: "student", text: "Hello! I sent you a connection request." }
             ]
         };
 
@@ -248,7 +248,7 @@
             // 2. FETCH REAL REQUESTS FROM BACKEND
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/users/pending-requests', {
+                const res = await fetch('/api/users/pending-requests', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -321,9 +321,13 @@
 
             const history = studentHistories[name] || [{ sender: "student", text: "Hello, I want to connect with you." }];
             history.forEach(m => {
+                const senderName = m.sender === 'alumni' ? (localStorage.getItem('fullName') || 'Alumni') : name;
                 chatBox.innerHTML += `
-                    <div class="px-5 py-3 max-w-[80%] shadow-sm ${m.sender === 'alumni' ? 'msg-alumni' : 'msg-student'}">
-                        ${m.text}
+                    <div class="flex flex-col ${m.sender === 'alumni' ? 'items-end' : 'items-start'} space-y-1">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase px-3">${senderName}</span>
+                        <div class="px-5 py-3 max-w-[80%] shadow-sm ${m.sender === 'alumni' ? 'msg-alumni' : 'msg-student'}">
+                            ${m.text}
+                        </div>
                     </div>
                 `;
             });
@@ -334,7 +338,13 @@
             const msg = document.getElementById('messageInput').value;
             if (msg) {
                 const chatBox = document.getElementById('chatMessages');
-                chatBox.innerHTML += `<div class="px-5 py-3 max-w-[80%] msg-alumni">${msg}</div>`;
+                const myName = localStorage.getItem('fullName') || 'Alumni';
+                chatBox.innerHTML += `
+                    <div class="flex flex-col items-end space-y-1">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase px-3">${myName}</span>
+                        <div class="px-5 py-3 max-w-[80%] msg-alumni">${msg}</div>
+                    </div>
+                `;
                 document.getElementById('messageInput').value = '';
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -343,7 +353,7 @@
         async function acceptRequest(requestId, studentName) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`http://localhost:3000/api/users/accept-request/${requestId}`, {
+                const res = await fetch(`/api/users/accept-request/${requestId}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -372,9 +382,9 @@
             incoming = incoming.filter(s => s !== studentName);
             localStorage.setItem('staticIncomingRequests', JSON.stringify(incoming));
 
-            // 3. Mark for student as connected (Hardcoded Vaishanavi for demo sync)
+            // 3. Mark for student as connected (Dynamic name for demo sync)
             let studentConnected = JSON.parse(localStorage.getItem('connectedAlumni') || '[]');
-            const alumniName = "Vaishanavi Maraskolhe";
+            const alumniName = localStorage.getItem('fullName') || "Vaishanavi Maraskolhe";
             if (!studentConnected.includes(alumniName)) studentConnected.push(alumniName);
             localStorage.setItem('connectedAlumni', JSON.stringify(studentConnected));
 
@@ -387,7 +397,7 @@
             loadRequests();
         }
 
-        document.getElementById('userName').innerText = 'Vaishanavi Maraskolhe';
+        document.getElementById('userName').innerText = localStorage.getItem('fullName') || 'Alumni User';
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -397,7 +407,7 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:3000/api/users/profile', {
+                const res = await fetch('/api/users/profile', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

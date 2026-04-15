@@ -18,7 +18,8 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Email already registered' });
         }
 
-        const approvalStatus = (role === 'student' || role === 'admin') ? true : false;
+        // All new registrations (Student/Alumni) require admin approval
+        const approvalStatus = false;
 
         const user = new User({
             fullName, email, password, role, graduationYear, currentCompany, jobTitle, linkedIn, phone, college,
@@ -28,7 +29,7 @@ router.post('/register', async (req, res) => {
         console.log('User registered successfully:', email);
         res.status(201).json({ 
             success: true, 
-            message: 'Registration successful! ' + (role === 'alumni' ? 'Waiting for admin approval.' : 'You can log in now.') 
+            message: 'Registration successful! Your account is waiting for admin approval.' 
         });
     } catch (error) {
         console.error('Registration Error:', error);

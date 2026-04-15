@@ -22,6 +22,16 @@ const adminOnly = (req, res, next) => {
     });
 };
 
+// Get all pending users for admin approval
+router.get('/pending', adminOnly, async (req, res) => {
+    try {
+        const users = await User.find({ isApproved: false });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Get all alumni
 router.get('/alumni', auth, async (req, res) => {
     try {
